@@ -87,7 +87,11 @@ class Chef
           package = split_package_identity(package_info["package_information"]["package_identity"])
           # Search for just the package name to catch a different version being installed
           Chef::Log.debug("#{new_resource} searching for installed package #{package['name']}")
-          found_packages = installed_packages.select { |p| p["package_identity"] =~ /^#{package['name']}~/ }
+          found_packages = installed_packages.select do |p|
+            existing_package_ident = split_package_identity(p["package_identity"])
+            existing_package_ident["name"] =~ /^#{package['name']}$/ &&
+              existing_package_ident["version"] == package["version"]
+          end
           if found_packages.empty?
             nil
           elsif found_packages.length == 1
